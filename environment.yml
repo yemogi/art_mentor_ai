@@ -1,0 +1,15 @@
+# usage: conda env create -f environment.yml
+
+# 프로젝트 전용 가상환경 이름
+name: art_mentor_ai
+
+# 패키지를 다운로드할 저장소
+channels:
+  - defaults
+
+dependencies:
+  # 팀에서 사용할 파이썬 버전
+  - python=3.12
+
+  # 파이썬 라이브러리 설치 도구
+  - pip
