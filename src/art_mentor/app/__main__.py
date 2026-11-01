@@ -2,6 +2,9 @@ from pathlib import Path
 
 import cv2
 
+import tkinter as tk
+from tkinter import filedialog
+
 from art_mentor.app.point_selector import select_corners
 from art_mentor.processing.perspective import correct_perspective
 
@@ -11,7 +14,26 @@ def main():
     project_root = Path(__file__).resolve().parents[3]
 
     # 입력 이미지 불러오기
-    image_path = project_root / "images" / "input" / "image_02.png"
+       # 파일 선택 창을 위한 기본 창은 숨기기
+    picker = tk.Tk()
+    picker.withdraw()
+
+    try:
+        selected_file = filedialog.askopenfilename(
+            parent=picker,
+            title="보정할 PNG 사진을 선택해 주세요",
+            initialdir=str(project_root / "images" / "input"),
+            filetypes=[("PNG 이미지", "*.png")],
+        )
+    finally:
+        picker.destroy()
+
+    # 취소를 누르면 종료
+    if not selected_file:
+        print("사진 선택을 취소했습니다.")
+        return
+
+    image_path = Path(selected_file)
     image = cv2.imread(str(image_path))
 
     if image is None:
@@ -35,7 +57,7 @@ def main():
     output_dir = project_root / "images" / "output"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    result_path = output_dir / "image_02_corrected.png"
+    result_path = output_dir / f"{image_path.stem}_corrected.png"
 
     if not cv2.imwrite(str(result_path), corrected):
         raise RuntimeError("보정 이미지 저장에 실패했습니다.")
