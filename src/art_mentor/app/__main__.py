@@ -108,4 +108,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ValueError as error:
+        print("보정을 중단했습니다:", error)
