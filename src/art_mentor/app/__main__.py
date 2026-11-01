@@ -2,6 +2,7 @@ from pathlib import Path
 
 import cv2
 
+from art_mentor.app.point_selector import select_corners
 from art_mentor.processing.perspective import correct_perspective
 
 
@@ -10,7 +11,7 @@ def main():
     project_root = Path(__file__).resolve().parents[3]
 
     # 입력 이미지 불러오기
-    image_path = project_root / "images" / "input" / "image_01.png"
+    image_path = project_root / "images" / "input" / "image_02.png"
     image = cv2.imread(str(image_path))
 
     if image is None:
@@ -21,12 +22,8 @@ def main():
 
     # 이 사진의 모서리 좌표
     # 왼쪽 위 → 오른쪽 위 → 오른쪽 아래 → 왼쪽 아래
-    corners = [
-        (82, 260),
-        (1027, 129),
-        (1387, 681),
-        (185, 1012),
-    ]
+    # 사진에서 클릭한 네 모서리 좌표 받기
+    corners = select_corners(image_path)
 
     # 별도 파일에 정의한 보정 함수 호출
     # 출력 크기는 아직 연습용 값
@@ -38,7 +35,7 @@ def main():
     output_dir = project_root / "images" / "output"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    result_path = output_dir / "image_01_corrected.png"
+    result_path = output_dir / "image_02_corrected.png"
 
     if not cv2.imwrite(str(result_path), corrected):
         raise RuntimeError("보정 이미지 저장에 실패했습니다.")
