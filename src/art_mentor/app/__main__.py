@@ -49,9 +49,11 @@ def main():
 
     # 별도 파일에 정의한 보정 함수 호출
     # 출력 크기는 아직 연습용 값
-    corrected = correct_perspective(
-        image, corners, width=1200, height=850
-    )
+        # 사진 속 변 길이로 출력 크기를 추정해서 보정
+    corrected = correct_perspective(image, corners)
+
+    print("출력 크기 추정값 (높이, 너비):", corrected.shape[:2])
+    print("주의: 실제 종이 비율을 확인하지 않은 추정 결과입니다.")
 
     # 보정 이미지 저장
     output_dir = project_root / "images" / "output"
