@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import cv2
-
+import math
 import tkinter as tk
 from tkinter import filedialog
 
@@ -14,7 +14,7 @@ def main():
     project_root = Path(__file__).resolve().parents[3]
 
     # 입력 이미지 불러오기
-       # 파일 선택 창을 위한 기본 창은 숨기기
+    # 파일 선택 창을 위한 기본 창은 숨기기
     picker = tk.Tk()
     picker.withdraw()
 
@@ -48,12 +48,52 @@ def main():
     corners = select_corners(image_path)
 
     # 별도 파일에 정의한 보정 함수 호출
-    # 출력 크기는 아직 연습용 값
-        # 사진 속 변 길이로 출력 크기를 추정해서 보정
-    corrected = correct_perspective(image, corners)
+    # 실제 종이의 가로:세로 비율 입력
+    while True:
+        ratio_text = input(
+            "종이의 가로:세로 비율을 입력하세요. 모르면 Enter: "
+        ).strip()
 
-    print("출력 크기 추정값 (높이, 너비):", corrected.shape[:2])
-    print("주의: 실제 종이 비율을 확인하지 않은 추정 결과입니다.")
+        # 아무것도 입력하지 않으면 변 길이로 추정
+        if ratio_text == "":
+            corrected = correct_perspective(image, corners)
+            print("실제 종이 비율을 모르는 상태의 추정 결과입니다.")
+            break
+
+        try:
+            paper_width, paper_height = map(float, ratio_text.split(":"))
+
+            # 두 값 모두 유한한 양수인지 확인
+            if not all(
+                math.isfinite(value) and value > 0
+                for value in (paper_width, paper_height)
+            ):
+                raise ValueError
+
+            # 출력 너비를 1200픽셀로 정하고 비율에 맞춰 높이 계산
+            width = 1200
+            height_value = width * (paper_height / paper_width)
+
+            if not math.isfinite(height_value):
+                raise ValueError
+
+            height = round(height_value)
+
+            # 지나치게 크거나 작은 결과 방지
+            if not 2 <= height <= 12000:
+                raise ValueError
+
+        except (ValueError, OverflowError):
+            print("비율을 확인해 주세요. 예: 4:3 또는 297:210")
+            continue
+
+        corrected = correct_perspective(
+            image, corners, width=width, height=height
+        )
+        print("입력한 종이 비율 적용:", ratio_text)
+        break
+
+    print("출력 크기 (높이, 너비):", corrected.shape[:2])
 
     # 보정 이미지 저장
     output_dir = project_root / "images" / "output"
